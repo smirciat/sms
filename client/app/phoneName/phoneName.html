@@ -1,0 +1,26 @@
+<div class="container padding-top">
+    <h1>Add a Contact</h1>
+    <div>
+        <label for="name">Name</label>
+        <input type"text" id="name" ng-model="phoneNameCtrl.newName.name">
+        <label for="phone">Phone</label>
+        <input type"text" id="phone" ng-model="phoneNameCtrl.newName.phone">
+        <button class="btn btn-success space" ng-click="phoneNameCtrl.addName()">Add Name</button>
+    </div>
+    </br>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Phone</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="name in phoneNameCtrl.names">
+                <td>{{name.name}}</td>
+                <td>{{name.phone}}</td>
+                <td><button class="btn btn-danger" ng-click="phoneNameCtrl.deleteName(name)">Delete Name</button></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

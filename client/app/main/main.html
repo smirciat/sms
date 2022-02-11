@@ -1,0 +1,87 @@
+<div ng-if="$ctrl.isAdmin()">
+  <div class="padding-top-sms">
+    </br>
+    <label class="control-label" for"phone">Phone Number</label>
+    <input class="space" type=text placeholder="+1xxxxxxxxxx" tooltip-placement="bottom" uib-tooltip="Include '+1' before ten digit number" id="phone" ng-model="$ctrl.sms.to">
+    <label class="control-label" for"body">Message</label>
+    <input class="space wide" type=text placeholder="Type Message Here" tooltip-placement="bottom" uib-tooltip="Message here" id="body" ng-model="$ctrl.sms.body">
+    <button class="btn btn-success space" tooltip-placement="bottom" uib-tooltip="Click to Send" ng-click="$ctrl.send()">Send</button>
+    <a href="/phoneName" class="space"><button class="btn btn-warning" tooltip-placement="bottom" uib-tooltip="Click to Edit Names and Numbers">Names/Numbers</button></a>
+    <button class="btn btn-link space">
+      <ul class="nav navbar-nav">    
+        <li class="dropdown">
+              <a href="#" data-toggle="dropdown" class="dropdown-toggle border-small">See Only One Conversation<b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                <li ng-repeat="listing in $ctrl.names">
+                  <div class="border-small" style="text-align:left;">
+                    <a ng-click="$ctrl.setNumber(listing.phone)" href="#"><p>{{listing.name + ': ' + listing.phone}}</p></a>
+                  </div>
+                </li>
+            </ul>
+        </li>
+      </ul>
+    </button>
+  </div>
+  <div>
+      <table class="table">
+          <thead>
+              <tr>
+                  <th>#</th>
+                  <th>To - Number</th>
+                  <th>To - Name</th>
+                  <th>From - Number</th>
+                  <th></th>
+                  <th>From - Name</th>
+                  <th>Body</th>
+                  <th>Image</th>
+                  <th>Sent</th>
+              </tr>
+          </thead>
+          <tbody>
+              <tr ng-repeat="message in $ctrl.messages" ng-class="$ctrl.class(message)">
+                  <th scope="row">{{$index+1}}</th>
+                  <td>{{message.to}}</td>
+                  <td>{{message.toName}}<input type="text" ng-model="message.aName" ng-hide="message.toName"><button ng-hide="message.toName" ng-click="$ctrl.addName(message.aName,message.to)">Add</button></td>
+                  
+                  <td>{{message.from}}</td>
+                  <td><button class="btn btn-success space" ng-click="$ctrl.reply(message)">Reply</button></td>
+                  <td>{{message.fromName}}<input type="text" ng-model="message.bName" ng-hide="message.fromName"><button ng-hide="message.fromName" ng-click="$ctrl.addName(message.bName,message.from)">Add</button></td>
+                  
+                  <td>{{message.body}}</td>
+                  <td><button ng-if="message.mediaUrl" class="btn btn-primary" ng-click="$ctrl.openMedia(message)">Click</button></td>
+                  <td>{{message.sent|date:'medium'}}</td>
+              </tr>
+          </tbody>
+      </table>
+  </div>
+</div>
+<div ng-if="!$ctrl.isAdmin()">
+  <header class="hero-unit" id="banner">
+    <div class="container">
+      <h1>'Allo, 'Allo!</h1>
+      <p class="lead">Kick-start your next web app with Angular Fullstack</p>
+      <img src="assets/images/yeoman.png" alt="I'm Yeoman">
+    </div>
+  </header>
+  
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <h1 class="page-header">Features:</h1>
+        <ul class="nav nav-tabs nav-stacked col-md-4 col-lg-4 col-sm-6" ng-repeat="thing in $ctrl.awesomeThings">
+          <li><a href="#" uib-tooltip="{{thing.info}}">{{thing.name}}<button type="button" class="close" ng-click="$ctrl.deleteThing(thing)">&times;</button></a></li>
+        </ul>
+      </div>
+    </div>
+  
+    <form class="thing-form">
+      <label>Syncs in realtime across clients</label>
+      <p class="input-group">
+        <input type="text" class="form-control" placeholder="Add a new thing here." ng-model="$ctrl.newThing">
+        <span class="input-group-btn">
+          <button type="submit" class="btn btn-primary" ng-click="$ctrl.addThing()">Add New</button>
+        </span>
+      </p>
+    </form>
+  </div>
+</div>
