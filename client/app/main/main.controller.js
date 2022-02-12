@@ -86,14 +86,12 @@
           this.insertNames();
           this.socket.unsyncUpdates('sm');
           this.socket.syncUpdates('sm', this.messages, (event, item, array)=>{
-             console.log(event);
-             console.log(item);
              this.insertNames();
              var from = item.fromName||"";
              if (!from||from==="") from=item.from;
                  if (event==='created'&&item.from!=='+12694423187') {
                    this.webNotification.showNotification('New SMS Message', {
-                        body: 'From: ' + from + ' Msg: ' + item.body,
+                        body: 'From: ' + from + '\nMsg: ' + item.body,
                         icon: '../assets/images/Icon-512.png',
                         onClick: function onNotificationClicked() {
                             console.log('Notification clicked.');

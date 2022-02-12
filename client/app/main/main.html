@@ -7,7 +7,7 @@
     <input class="space wide" type=text placeholder="Type Message Here" tooltip-placement="bottom" uib-tooltip="Message here" id="body" ng-model="$ctrl.sms.body">
     <button class="btn btn-success space" tooltip-placement="bottom" uib-tooltip="Click to Send" ng-click="$ctrl.send()">Send</button>
     <a href="/phoneName" class="space"><button class="btn btn-warning" tooltip-placement="bottom" uib-tooltip="Click to Edit Names and Numbers">Names/Numbers</button></a>
-    <button class="btn btn-link space">
+    <button class="btn btn-link space" tooltip-placement="top" uib-tooltip="Select from this list to show only one conversation.  Select `All` to show everything again.">
       <ul class="nav navbar-nav">    
         <li class="dropdown">
               <a href="#" data-toggle="dropdown" class="dropdown-toggle border-small">See Only One Conversation<b class="caret"></b></a>
@@ -29,8 +29,8 @@
                   <th>#</th>
                   <th>To - Number</th>
                   <th>To - Name</th>
-                  <th>From - Number</th>
                   <th></th>
+                  <th>From - Number</th>
                   <th>From - Name</th>
                   <th>Body</th>
                   <th>Image</th>
@@ -42,11 +42,9 @@
                   <th scope="row">{{$index+1}}</th>
                   <td>{{message.to}}</td>
                   <td>{{message.toName}}<input type="text" ng-model="message.aName" ng-hide="message.toName"><button ng-hide="message.toName" ng-click="$ctrl.addName(message.aName,message.to)">Add</button></td>
-                  
-                  <td>{{message.from}}</td>
                   <td><button class="btn btn-success space" ng-click="$ctrl.reply(message)">Reply</button></td>
+                  <td>{{message.from}}</td>
                   <td>{{message.fromName}}<input type="text" ng-model="message.bName" ng-hide="message.fromName"><button ng-hide="message.fromName" ng-click="$ctrl.addName(message.bName,message.from)">Add</button></td>
-                  
                   <td>{{message.body}}</td>
                   <td><button ng-if="message.mediaUrl" class="btn btn-primary" ng-click="$ctrl.openMedia(message)">Click</button></td>
                   <td>{{message.sent|date:'medium'}}</td>

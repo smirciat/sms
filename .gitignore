@@ -3,6 +3,7 @@ public
 .tmp
 .idea
 client/bower_components
+server/secret
 dist
 /server/config/local.env.js
 npm-debug.log

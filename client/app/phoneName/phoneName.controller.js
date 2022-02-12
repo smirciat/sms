@@ -20,8 +20,10 @@ class PhoneNameComponent {
   
   getNames(){
       this.$http.get('/api/smsNames').then((response)=>{
-        console.log(response.data);
-        this.names=response.data;
+        this.names=response.data.sort(function(a,b){
+          return a.name.localeCompare(b.name);
+        });
+        console.log(this.names);
       });
   }
   

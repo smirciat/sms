@@ -5,9 +5,17 @@
 'use strict';
 
 import express from 'express';
+import fs from 'fs';
 import sqldb from './sqldb';
 import config from './config/environment';
 import http from 'http';
+import https from 'https';
+console.log(process.cwd());
+
+var privateKey  = fs.readFileSync('server/secret/server.key', 'utf8');
+var certificate = fs.readFileSync('server/secret/server.cert', 'utf8');
+
+var credentials = {key: privateKey, cert: certificate};
 
 console.log(config);
 
@@ -16,7 +24,8 @@ if (config.seedDB) { require('./config/seed'); }
 
 // Setup server
 var app = express();
-var server = http.createServer(app);
+//var server = http.createServer(app);
+var server = https.createServer(credentials,app);
 var socketio = require('socket.io')(server, {
   serveClient: config.env !== 'production',
   path: '/socket.io-client'

@@ -25,6 +25,8 @@ function handleError(res, statusCode) {
 }
 
 function responseWithResult(res, statusCode) {
+  
+    console.log(res);
   statusCode = statusCode || 200;
   return function(entity) {
     if (entity) {
@@ -94,7 +96,7 @@ export function create(req, res) {
     body: req.body.body
   }, function(err, message) {
       if(err) {
-          console.log('Failed')
+          console.log('Failed');
           console.error(err.message);
       }
   });
@@ -114,7 +116,7 @@ export function incoming(req, res) {
   console.log('incoming sms');
   console.log(req.body);
   return Sm.create(sms)
-    .then(responseWithResult(res, 201))
+    .then(function(){res.send("<Response/>")})
     .catch(handleError(res));
 }
 
