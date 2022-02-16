@@ -14,22 +14,31 @@
       this.isAdmin = Auth.isAdmin;
       this.moment=moment;
       this.webNotification=webNotification;
+      this.showing=false;
       
       $scope.$on('$destroy', function() {
         socket.unsyncUpdates('thing');
         socket.unsyncUpdates('sm');
+        this.undo();
+        this.$timeout.cancel(this.loginTimeout);
       });
       this.sms = {};
       this.sms.to='+1';
       this.sms.body="";
       
-      this.newSms = "btn btn-default";//or "button-flashing"
+      this.newSms = "btn btn-default";//or "button-flashing";
       this.messages=[];
       this.names=[];
-      this.refresh("");
+      this.nameArr=[];
+      
+      
     }
 
     $onInit() {
+      this.refresh("");
+      this.loginTimeout=this.$timeout(function(){
+        window.location.reload();
+      },14*60*60*1000);
       this.$http.get('/api/things')
           .then(response => {
             this.awesomeThings = response.data;
@@ -55,8 +64,18 @@
       else return "success";
     }
     
-    setNumber(phone){
+    undo(){
       this.$timeout.cancel(this.alltimeout);
+    }
+    
+    toggle(name){
+      var foundIndex = this.nameArr.findIndex(x => x.name === name.name);
+      this.nameArr[foundIndex].expanded = !this.nameArr[foundIndex].expanded;
+      this.reply(this.nameArr[foundIndex].messages[0]);
+    }
+    
+    setNumber(phone){
+      this.undo();
       this.refresh(phone);
       var timeout=function(){
         if (phone!=="") {
@@ -67,12 +86,13 @@
     }
     
     refresh(number){
+      this.nameArr=[];
       if (number===null) number="";
       this.$http.get('/api/smsNames').then((response)=>{
         this.names=response.data.sort((a,b)=>{
           return a.name.localeCompare(b.name);
         });
-        this.names.unshift({name:'All',phone:''});
+        
         this.$http.post('/api/sms/all').then((response)=>{
           response.data=response.data.filter(sm=>{
             return !sm.autoSMS;
@@ -83,17 +103,21 @@
               return sm.to===number||sm.from===number;
             });
           }
-          this.insertNames();
+          
+          this.resort();
+          
+          this.names.unshift({name:'All',phone:''});
           this.socket.unsyncUpdates('sm');
           this.socket.syncUpdates('sm', this.messages, (event, item, array)=>{
-             this.insertNames();
              var from = item.fromName||"";
              if (!from||from==="") from=item.from;
                  if (event==='created'&&item.from!=='+12694423187') {
+                   var showing=false;
                    this.webNotification.showNotification('New SMS Message', {
                         body: 'From: ' + from + '\nMsg: ' + item.body,
                         icon: '../assets/images/Icon-512.png',
                         onClick: function onNotificationClicked() {
+                            showing=true;
                             console.log('Notification clicked.');
                         },
                         requireInteraction: true   
@@ -102,24 +126,57 @@
                         if (error) {
                             window.alert('Unable to show notification: ' + error.message);
                         } else {
-                            console.log('Notification Shown.');
+                            console.log('Notification Shown.' + from);
         
-                            setTimeout(function hideNotification() {
-                                console.log('Hiding notification....');
+                            var int=setInterval(function hideNotification() {
+                                //console.log('Hiding notification....');
+                                console.log( showing);
+                                if ( showing) {
+                                  hide();
+                                   showing=false;
+                                  clearInterval(int); 
+                                }
                                 //hide(); //manually close the notification (you can skip this if you use the autoClose option)
-                            }, 60000000);
+                            }, 10*1000);
                         }
                     });
     
                  }
-             array.sort((a,b)=>{
-               return this.moment(b.sent).diff(this.moment(a.sent));
-             });
+             
+             this.refresh("");
           });
         });
       });
     }
     
+     resort(){
+          this.insertNames();
+          var tempNameArr=[];
+          this.names.forEach((name)=>{
+            var messagesMatch = this.messages.filter(sm=>{
+              return sm.to===name.phone||sm.from===name.phone;
+            });
+            
+            messagesMatch.sort((a,b)=>{
+              return new Date(a.date) - new Date(b.date);
+            }); 
+            messagesMatch=messagesMatch.reverse();
+            var expanded = false;
+            var foundIndex=this.nameArr.findIndex(x=>x.name.name===name.name);
+            if (foundIndex&&foundIndex>=0) expanded=this.nameArr[foundIndex].expanded;
+            if (name.name!=="Bering Air"&&messagesMatch.length>0) tempNameArr.push({name:name,messages:messagesMatch,expanded:expanded});
+          });
+          
+          tempNameArr.sort((a,b)=>{
+            if (!a||!a.messages||a.messages.length===0) return -1;
+            if (!b||!b.messages||b.messages.length===0) return 1;
+            return new Date(a.messages[0].sent) - new Date(b.messages[0].sent);
+          });
+          
+          this.nameArr=tempNameArr;
+          //console.log(this.nameArr);
+     }
+     
      send(){
       this.sms.sent = this.moment().toDate();
       switch (this.sms.to.length){
@@ -136,11 +193,11 @@
           this.refresh("");
           this.sms = {};
           this.sms.to='+1';
-          this.sms.body="Message from Bering Air Dispatch, Reply to this number. ";
+          this.sms.body="";
         },(err)=>{console.log(err)});
       }
       else {
-        alert("check that you have a message to send first!");
+        alert("Check that you have a message to send first!");
       }
     }
     

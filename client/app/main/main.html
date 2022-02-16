@@ -1,12 +1,12 @@
-<div ng-if="$ctrl.isAdmin()">
-  <div class="padding-top-sms">
+<div id="page" ng-if="$ctrl.isAdmin()">
+  <div id="tdcontent">
     </br>
     <label class="control-label" for"phone">Phone Number</label>
     <input class="space" type=text placeholder="+1xxxxxxxxxx" tooltip-placement="bottom" uib-tooltip="Include '+1' before ten digit number" id="phone" ng-model="$ctrl.sms.to">
     <label class="control-label" for"body">Message</label>
     <input class="space wide" type=text placeholder="Type Message Here" tooltip-placement="bottom" uib-tooltip="Message here" id="body" ng-model="$ctrl.sms.body">
     <button class="btn btn-success space" tooltip-placement="bottom" uib-tooltip="Click to Send" ng-click="$ctrl.send()">Send</button>
-    <a href="/phoneName" class="space"><button class="btn btn-warning" tooltip-placement="bottom" uib-tooltip="Click to Edit Names and Numbers">Names/Numbers</button></a>
+    <a href="/phoneName" class="space"><button class="btn btn-warning" tooltip-placement="bottom" uib-tooltip="Click to Edit Names and Numbers" ng-click="$ctrl.undo()">Names/Numbers</button></a>
     <button class="btn btn-link space" tooltip-placement="top" uib-tooltip="Select from this list to show only one conversation.  Select `All` to show everything again.">
       <ul class="nav navbar-nav">    
         <li class="dropdown">
@@ -22,8 +22,11 @@
       </ul>
     </button>
   </div>
-  <div>
-      <table class="table">
+  
+  
+  <div id="content" scroll-glue>
+    <div ng-repeat="name in $ctrl.nameArr" > 
+      <table ng-if="name.expanded" class="table glue" scroll-glue>
           <thead>
               <tr>
                   <th>#</th>
@@ -38,7 +41,7 @@
               </tr>
           </thead>
           <tbody>
-              <tr ng-repeat="message in $ctrl.messages" ng-class="$ctrl.class(message)">
+              <tr ng-repeat="message in name.messages" ng-class="$ctrl.class(message)">
                   <th scope="row">{{$index+1}}</th>
                   <td>{{message.to}}</td>
                   <td>{{message.toName}}<input type="text" ng-model="message.aName" ng-hide="message.toName"><button ng-hide="message.toName" ng-click="$ctrl.addName(message.aName,message.to)">Add</button></td>
@@ -51,8 +54,16 @@
               </tr>
           </tbody>
       </table>
+      <div>
+        <h4 style="display:inline;"><button class="btn btn-success" style="margin-right:10px;" ng-click="$ctrl.toggle(name)" tooltip-placement="right" uib-tooltip="Click to Expand">==></button>{{name.name.name}}</h4>
+        <h5 style="display:inline; margin-left:20px;">{{name.messages[0].sent | date:"shortTime"}}</h5>
+        <h5 style="display:inline; margin-left:10px;">{{name.messages[0].sent | date:"longDate"}}</h5>
+        <h5 style="color: rgba(0, 0, 0, 0.5); margin-left:60px;">"{{name.messages[0].body}}"</h5>
+      </div>
+    </div>  
   </div>
 </div>
+
 <div ng-if="!$ctrl.isAdmin()">
   <header class="hero-unit" id="banner">
     <div class="container">

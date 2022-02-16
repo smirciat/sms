@@ -16,7 +16,8 @@
     "angular-ui-router": "0.3.2",
     "angular-web-notification": "2.0.1",
     "angular-validation-match": "~1.5.2",
-    "angular-moment": "1.0.1"
+    "angular-moment": "1.0.1",
+    "angular-scroll-glue": "~2.0.6"
   },
   "devDependencies": {
     "angular-mocks": "1.6.10"

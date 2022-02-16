@@ -12,6 +12,7 @@
 import _ from 'lodash';
 var sqldb = require('../../sqldb');
 var Sm = sqldb.Sm;
+var twilio1=require('twilio');
 var client = require('twilio')(
   process.env.TWILIO_ACCOUNT_SID,
   process.env.TWILIO_AUTH_TOKEN
@@ -69,7 +70,7 @@ function removeEntity(res) {
 export function index(req, res) {
   Sm.findAll({
     order:[['sent','DESC']],
-    limit:200
+    limit:2000
   })
     .then(responseWithResult(res))
     .catch(handleError(res));
@@ -114,9 +115,13 @@ export function incoming(req, res) {
             sent: new Date()
   };
   console.log('incoming sms');
-  console.log(req.body);
+  //console.log(req.body);
+  var resp = '<?xml version="1.0" encoding="UTF-8"?><Response>Response Text.</Response>';
+  res.writeHead(201, {
+    'Content-Type':'text/xml'
+  });
   return Sm.create(sms)
-    .then(function(){res.send("<Response/>")})
+    .then(function(){res.end(resp)})
     .catch(handleError(res));
 }
 

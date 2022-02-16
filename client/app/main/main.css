@@ -43,3 +43,26 @@
     padding-left:20px;
     padding-right:20px;
 }
+.glue{
+  overflow-y: scroll;
+}
+#page {
+    display:block; 
+    width:100%; 
+    height:90vh !important; 
+    overflow:hidden;
+}
+
+#tdcontent {
+    float:left; 
+    width:100%; 
+    display:block;
+}
+
+#content {      
+    float:left; 
+    width:100%; 
+    height:100%; 
+    display:block; 
+    overflow:scroll;
+}
