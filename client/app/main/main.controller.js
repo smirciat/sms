@@ -143,7 +143,7 @@
     
                  }
              
-             this.refresh("");
+             this.resort();
           });
         });
       });
@@ -162,15 +162,19 @@
             }); 
             messagesMatch=messagesMatch.reverse();
             var expanded = false;
+            console.log(this.nameArr)
             var foundIndex=this.nameArr.findIndex(x=>x.name.name===name.name);
-            if (foundIndex&&foundIndex>=0) expanded=this.nameArr[foundIndex].expanded;
+            if (foundIndex!==-1) {
+              expanded=this.nameArr[foundIndex].expanded;
+              console.log(this.nameArr[foundIndex]);
+            }
             if (name.name!=="Bering Air"&&messagesMatch.length>0) tempNameArr.push({name:name,messages:messagesMatch,expanded:expanded});
           });
           
           tempNameArr.sort((a,b)=>{
             if (!a||!a.messages||a.messages.length===0) return -1;
             if (!b||!b.messages||b.messages.length===0) return 1;
-            return new Date(a.messages[0].sent) - new Date(b.messages[0].sent);
+            return new Date(a.messages[(a.messages.length-1)].sent) - new Date(b.messages[(b.messages.length-1)].sent);
           });
           
           this.nameArr=tempNameArr;
