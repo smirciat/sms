@@ -43,15 +43,16 @@
     padding-left:20px;
     padding-right:20px;
 }
-
+.blue-background{
+  background: lightblue;
+}
 .glue{
   overflow-y: scroll;
 }
 #page {
     display:block; 
     width:100%; 
-    height: calc(95vh - 120px) !important; 
-    
+    height: calc(95vh - 120px) !important;
 }
 
 #tdcontent {
@@ -65,5 +66,5 @@
     width:100%; 
     height:100%; 
     display:block; 
-    overflow:scroll;
+    overflow-y:scroll;
 }

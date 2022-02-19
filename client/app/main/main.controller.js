@@ -15,6 +15,7 @@
       this.moment=moment;
       this.webNotification=webNotification;
       this.showing=false;
+      this.zoomed=false;
       
       $scope.$on('$destroy', function() {
         socket.unsyncUpdates('thing');
@@ -68,10 +69,38 @@
       this.$timeout.cancel(this.alltimeout);
     }
     
+    newMessage(name){
+      if (name.isNew) return "blue-background";
+    }
+     
+     showButtons(name){
+       if (name.expanded) return true;
+       else if (this.zoomed) return false;
+       return true;
+     }
+    
     toggle(name){
       var foundIndex = this.nameArr.findIndex(x => x.name === name.name);
+      this.nameArr[foundIndex].isNew = false;
       this.nameArr[foundIndex].expanded = !this.nameArr[foundIndex].expanded;
       this.reply(this.nameArr[foundIndex].messages[0]);
+      this.$timeout(()=>{
+        if (name.expanded) {
+          this.zoomed=true;
+          this.nameArr.forEach((n)=>{
+            n.hidden=true;
+          });
+          this.nameArr[foundIndex].hidden=false;
+        }
+        else {
+          this.zoomed=false;
+          this.nameArr.forEach((n)=>{
+            n.hidden=false;
+          });
+        }
+        
+      },0);
+      //this.zoomed=!this.zoomed;
     }
     
     setNumber(phone){
@@ -104,7 +133,7 @@
             });
           }
           
-          this.resort();
+          this.resort(undefined);
           
           this.names.unshift({name:'All',phone:''});
           this.socket.unsyncUpdates('sm');
@@ -127,6 +156,7 @@
                             window.alert('Unable to show notification: ' + error.message);
                         } else {
                             console.log('Notification Shown.' + from);
+                            if (from==='+19074855026') hide();
         
                             var int=setInterval(function hideNotification() {
                                 //console.log('Hiding notification....');
@@ -143,13 +173,13 @@
     
                  }
              
-             this.resort();
+             this.resort(item);
           });
         });
       });
     }
     
-     resort(){
+     resort(item){
           this.insertNames();
           var tempNameArr=[];
           this.names.forEach((name)=>{
@@ -158,27 +188,31 @@
             });
             
             messagesMatch.sort((a,b)=>{
-              return new Date(a.date) - new Date(b.date);
+              return a._id-b._id;
             }); 
-            messagesMatch=messagesMatch.reverse();
+            //messagesMatch=messagesMatch.reverse();
             var expanded = false;
-            console.log(this.nameArr)
+            var hidden = false;
+            var isNew=false;
+            if (this.zoomed) hidden=true;
+            //console.log(this.nameArr)
             var foundIndex=this.nameArr.findIndex(x=>x.name.name===name.name);
             if (foundIndex!==-1) {
               expanded=this.nameArr[foundIndex].expanded;
-              console.log(this.nameArr[foundIndex]);
+              if (expanded) hidden=false;
+              isNew=this.nameArr[foundIndex].isNew;
+              if (this.nameArr[foundIndex].name.phone===item.to||this.nameArr[foundIndex].name.phone===item.from) isNew=true;
             }
-            if (name.name!=="Bering Air"&&messagesMatch.length>0) tempNameArr.push({name:name,messages:messagesMatch,expanded:expanded});
+            if (name.name!=="Bering Air"&&messagesMatch.length>0) tempNameArr.push({name:name,messages:messagesMatch,expanded:expanded,hidden:hidden,isNew:isNew});
           });
           
           tempNameArr.sort((a,b)=>{
             if (!a||!a.messages||a.messages.length===0) return -1;
             if (!b||!b.messages||b.messages.length===0) return 1;
-            return new Date(a.messages[(a.messages.length-1)].sent) - new Date(b.messages[(b.messages.length-1)].sent);
+            return -a.messages[(a.messages.length-1)]._id + b.messages[(b.messages.length-1)]._id;
           });
           
           this.nameArr=tempNameArr;
-          //console.log(this.nameArr);
      }
      
      send(){

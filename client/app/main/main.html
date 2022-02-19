@@ -2,7 +2,7 @@
   
   <div style="height:80px;" id="tdcontent">
     </br>
-    <label class="control-label" for"phone">Phone Number</label>
+    <label class="control-label" for"phone">Phone Number{{$ctrl.zoomed}}</label>
     <input class="space" type=text placeholder="+1xxxxxxxxxx" tooltip-placement="bottom" uib-tooltip="Include '+1' before ten digit number" id="phone" ng-model="$ctrl.sms.to">
     <label class="control-label" for"body">Message</label>
     <input class="space wide" type=text placeholder="Type Message Here" tooltip-placement="bottom" uib-tooltip="Message here" id="body" ng-model="$ctrl.sms.body">
@@ -25,7 +25,7 @@
   </div>
   
   
-  <div id="content" scroll-glue>
+  <div id="content" scroll-glue="$ctrl.zoomed">
     <div ng-repeat="name in $ctrl.nameArr" > 
       <table ng-if="name.expanded" class="table">
           <thead>
@@ -55,8 +55,8 @@
               </tr>
           </tbody>
       </table>
-      <div>
-        <h4 style="display:inline;"><button class="btn btn-success" style="margin-right:10px;" ng-click="$ctrl.toggle(name)" tooltip-placement="right" uib-tooltip="Click to Expand">==></button>{{name.name.name}}</h4>
+      <div ng-hide="name.hidden" ng-class="$ctrl.newMessage(name)">
+        <h4 style="display:inline;"><button class="btn btn-success" style="margin-right:10px;" ng-click="$ctrl.toggle(name)" tooltip-placement="right" uib-tooltip="Click to Show/Hide">==></button>{{name.name.name}}</h4>
         <h5 style="display:inline; margin-left:20px;">{{name.messages[(name.messages.length-1)].sent | date:"shortTime"}}</h5>
         <h5 style="display:inline; margin-left:10px;">{{name.messages[(name.messages.length-1)].sent | date:"longDate"}}</h5>
         <h5 style="color: rgba(0, 0, 0, 0.5); margin-left:60px;">"{{name.messages[(name.messages.length-1)].body}}"</h5>
