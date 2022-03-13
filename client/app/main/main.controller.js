@@ -26,7 +26,7 @@
       this.sms = {};
       this.sms.to='+1';
       this.sms.body="";
-      
+      this.sms.mediaUrl="";      
       this.newSms = "btn btn-default";//or "button-flashing";
       this.messages=[];
       this.names=[];
@@ -44,7 +44,7 @@
           .then(response => {
             this.awesomeThings = response.data;
           this.socket.syncUpdates('thing', this.awesomeThings);
-        });
+        }); 
     }
 
     addThing() {
@@ -63,6 +63,51 @@
     class(message){
       if (message.to==='+12694423187'||message.to==='+19073022700') return 'danger';
       else return "success";
+    }
+    
+    img(){
+      if (this.imgSrc&&this.imgSrc!=="") return true;
+      else return false;
+    }
+    
+    blobToBase64(blob) {
+      return new Promise((resolve, _) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    }
+    
+    paste(event){
+      var URLObj = window.URL || window.webkitURL;
+      var blob=null;
+      var filename="";
+      this.imgSrc = "";
+      var items=event.originalEvent.clipboardData.items;
+      for (var i=0;i<items.length;i++){
+        //console.log(items[i].type);
+        if (items[i].type.substring(0,5)==="image") {
+           blob=event.originalEvent.clipboardData.items[i].getAsFile();
+           //this.imgSrc = URLObj.createObjectURL(blob);
+           filename = new Date().getTime().toString() + '.png';
+           this.blobToBase64(blob).then((result)=>{
+             //console.log(res)
+             this.$http.post('/api/sms/image',{blob:result, filename:filename}).then((res)=>{
+                console.log(res);
+                this.imgSrc='https://bering-reservations.s3.us-west-2.amazonaws.com/images/' + filename;
+                this.sms.mediaUrl = this.imgSrc;
+              },
+              (err)=>{console.log(err)});
+            });
+           
+           
+           //size 1600x860
+           
+           break;
+        }
+      }
+      
+     
     }
     
     undo(){
@@ -140,7 +185,7 @@
           this.socket.syncUpdates('sm', this.messages, (event, item, array)=>{
              var from = item.fromName||"";
              if (!from||from==="") from=item.from;
-                 if (event==='created'&&item.from!=='+12694423187') {
+                 if (event==='created'&&item.from!=='+12694423187'&&item.from!='+19074855026') {
                    var showing=false;
                    this.webNotification.showNotification('New SMS Message', {
                         body: 'From: ' + from + '\nMsg: ' + item.body,
@@ -226,12 +271,14 @@
             break;
         default: break;
       }
-      if (this.sms.body&&this.sms.to&&this.sms.to.length>6&&this.sms.body.length>3) {
+      if (this.sms.to&&this.sms.to.length>6) {
         this.$http.post('/api/sms/twilio',this.sms).then((res)=>{
-          this.refresh("");
+          //this.refresh("");
           this.sms = {};
           this.sms.to='+1';
           this.sms.body="";
+          this.sms.mediaUrl="";
+          this.imgSrc="";
         },(err)=>{console.log(err)});
       }
       else {
@@ -271,6 +318,7 @@
     }
     
     openMedia(message){
+      if (!message) message={mediaUrl:this.imgSrc};
       this.$window.open(message.mediaUrl, '_blank');
     }
     

@@ -11,6 +11,7 @@ router.get('/', controller.nexmo);
 router.post('/', controller.nexmo);
 router.post('/all', auth.hasRole('admin'), controller.index);
 router.get('/:id', auth.hasRole('admin'), controller.show);
+router.post('/image', auth.hasRole('admin'), controller.image);
 router.post('/twilio', auth.hasRole('admin'), controller.create);
 router.post('/incoming', controller.incoming);
 router.put('/:id', auth.hasRole('admin'), controller.update);

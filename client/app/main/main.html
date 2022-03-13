@@ -2,13 +2,18 @@
   
   <div style="height:80px;" id="tdcontent">
     </br>
-    <label class="control-label" for"phone">Phone Number{{$ctrl.zoomed}}</label>
+    <label class="control-label" for"phone">Phone Number</label>
     <input class="space" type=text placeholder="+1xxxxxxxxxx" tooltip-placement="bottom" uib-tooltip="Include '+1' before ten digit number" id="phone" ng-model="$ctrl.sms.to">
     <label class="control-label" for"body">Message</label>
     <input class="space wide" type=text placeholder="Type Message Here" tooltip-placement="bottom" uib-tooltip="Message here" id="body" ng-model="$ctrl.sms.body">
+    
+    <label ng-if="!$ctrl.img()" class="control-label" for"paste">Paste Image</label>
+    <input ng-if="!$ctrl.img()" class="space narrow" type=text placeholder="Paste Image Here" tooltip-placement="bottom" uib-tooltip="Image here" id="image"
+       ng-paste="$ctrl.paste($event)">
+    <img ng-if="$ctrl.img()" class="thumbnail" ng-src="{{$ctrl.imgSrc}}" ng-click="$ctrl.openMedia(null)">
     <button class="btn btn-success space" tooltip-placement="bottom" uib-tooltip="Click to Send" ng-click="$ctrl.send()">Send</button>
     <a href="/phoneName" class="space"><button class="btn btn-warning" tooltip-placement="bottom" uib-tooltip="Click to Edit Names and Numbers" ng-click="$ctrl.undo()">Names/Numbers</button></a>
-    <button class="btn btn-link space" tooltip-placement="top" uib-tooltip="Select from this list to show only one conversation.  Select `All` to show everything again.">
+    <button ng-if="false" class="btn btn-link space" tooltip-placement="top" uib-tooltip="Select from this list to show only one conversation.  Select `All` to show everything again.">
       <ul class="nav navbar-nav">    
         <li class="dropdown">
               <a href="#" data-toggle="dropdown" class="dropdown-toggle border-small">See Only One Conversation<b class="caret"></b></a>
@@ -50,7 +55,7 @@
                   <td>{{message.from}}</td>
                   <td>{{message.fromName}}<input type="text" ng-model="message.bName" ng-hide="message.fromName"><button ng-hide="message.fromName" ng-click="$ctrl.addName(message.bName,message.from)">Add</button></td>
                   <td>{{message.body}}</td>
-                  <td><button ng-if="message.mediaUrl" class="btn btn-primary" ng-click="$ctrl.openMedia(message)">Click</button></td>
+                  <td><img ng-if="message.mediaUrl" class="thumbnail" ng-click="$ctrl.openMedia(message)" ng-src="{{message.mediaUrl}}"></td>
                   <td>{{message.sent|date:'medium'}}</td>
               </tr>
           </tbody>
