@@ -11,20 +11,21 @@
 
 import _ from 'lodash';
 var sqldb = require('../../sqldb');
+var fs = require('fs');
 var Sm = sqldb.Sm;
 var twilio1=require('twilio');
 var client = require('twilio')(
   process.env.TWILIO_ACCOUNT_SID,
   process.env.TWILIO_AUTH_TOKEN
 );
-var AWS = require('aws-sdk');
-AWS.config.update({
-        accessKeyId:  process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey:  process.env.AWS_SECRET_ACCESS_KEY,
-        region: 'us-west-2'
-    });
+//var AWS = require('aws-sdk');
+//AWS.config.update({
+//        accessKeyId:  process.env.AWS_ACCESS_KEY_ID,
+//        secretAccessKey:  process.env.AWS_SECRET_ACCESS_KEY,
+//        region: 'us-west-2'
+//    });
 
-var s3Bucket = new AWS.S3( { params: {Bucket: 'bering-reservations'} } );
+//var s3Bucket = new AWS.S3( { params: {Bucket: 'bering-reservations'} } );
 
 function handleError(res, statusCode) {
   statusCode = statusCode || 500;
@@ -96,31 +97,30 @@ export function show(req, res) {
     .catch(handleError(res));
 }
 
-// Creates a new Sm in the DB
+// Uploads an image to ./server/png/
 export function image(req, res) {
   var buf=req.body.blob;
   buf = new Buffer(buf.replace(/^data:image\/\w+;base64,/, ""),'base64');
+  fs.writeFile("./server/png/"+req.body.filename, buf, 'base64', (err)=> {
+    if (err) {
+        throw err;
+      }
+      else {
+        console.log(`File uploaded successfully.`);
+        res.sendStatus(200);
+      }
+  });
     var params = {
       Bucket: 'bering-reservations',
       ACL: 'public-read',
-        Key: 'images/' + req.body.filename,
-        Body: buf,
-        ContentEncoding: 'base64',
-        ContentType: 'image/png'
+      Key: 'images/' + req.body.filename,
+      Body: buf,
+      ContentEncoding: 'base64',
+      ContentType: 'image/png'
     };
-    s3Bucket.upload(params, function(err, data) {
-        if (err) {
-            throw err;
-        }
-        else {
-          console.log(`File uploaded successfully.`);
-          console.log(data);
-          //responseWithResult(res, 201);
-          res.sendStatus(200);
-          return data;
-        }
-    });
-    //res.status(201);
+    //s3Bucket.upload(params, function(err, data) {
+      
+    //});
 }
 
 // Creates a new Sm in the DB
@@ -131,10 +131,13 @@ export function create(req, res) {
     to: req.body.to,
     mediaUrl:req.body.mediaUrl,
     body: req.body.body
-  }, function(err, message) {
+  }, (err, message)=>{
       if(err) {
-          console.log('Failed');
-          console.error(err.message);
+          console.log('Failed to create at Twilio');
+          //console.error(err.message);
+      }
+      else{
+        console.log(message);
       }
   });
   return Sm.create(req.body)

@@ -8,7 +8,15 @@
 module.exports = {
   DOMAIN:           'http://localhost:9000',
   SESSION_SECRET:   'newsimple-secret',
-
+  SEQUELIZE_URI: '',
   // Control debug level for modules using visionmedia/debug
-  DEBUG: ''
+  DEBUG: '',
+  
+  TWILIO_AUTH_TOKEN: '',
+  TWILIO_ACCOUNT_SID: '',
+  TWILIO_PHONE_NUMBER: '',
+  TWILIO_PHONE_NUMBER_SID: '',
+  
+  AWS_ACCESS_KEY_ID: '',
+  AWS_SECRET_ACCESS_KEY: ''
 };

@@ -4,6 +4,7 @@ public
 .idea
 client/bower_components
 server/secret
+server/png
 dist
 /server/config/local.env.js
 npm-debug.log

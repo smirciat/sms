@@ -20,8 +20,6 @@
       $scope.$on('$destroy', function() {
         socket.unsyncUpdates('thing');
         socket.unsyncUpdates('sm');
-        this.undo();
-        this.$timeout.cancel(this.loginTimeout);
       });
       this.sms = {};
       this.sms.to='+1';
@@ -36,6 +34,17 @@
     }
 
     $onInit() {
+      //async function isAdminAsync(callback){
+      //  try {
+      //    return callback();
+      //  }
+      //  catch (err){
+      //    console.log(err);
+      //  }
+      //};
+      //isAdminAsync(this.isAdmin).then(res=>{
+      //  if (res) this.refresh("");
+      //});
       this.refresh("");
       this.loginTimeout=this.$timeout(function(){
         window.location.reload();
@@ -87,23 +96,19 @@
       for (var i=0;i<items.length;i++){
         //console.log(items[i].type);
         if (items[i].type.substring(0,5)==="image") {
-           blob=event.originalEvent.clipboardData.items[i].getAsFile();
-           //this.imgSrc = URLObj.createObjectURL(blob);
-           filename = new Date().getTime().toString() + '.png';
-           this.blobToBase64(blob).then((result)=>{
-             //console.log(res)
-             this.$http.post('/api/sms/image',{blob:result, filename:filename}).then((res)=>{
-                console.log(res);
-                this.imgSrc='https://bering-reservations.s3.us-west-2.amazonaws.com/images/' + filename;
-                this.sms.mediaUrl = this.imgSrc;
-              },
-              (err)=>{console.log(err)});
-            });
-           
-           
-           //size 1600x860
-           
-           break;
+         blob=event.originalEvent.clipboardData.items[i].getAsFile();
+         //this.imgSrc = URLObj.createObjectURL(blob);
+         filename = new Date().getTime().toString() + '.png';
+         this.blobToBase64(blob).then((result)=>{
+           this.$http.post('/api/sms/image',{blob:result, filename:filename}).then((res)=>{
+             //https://beringair.xyz:58785/png?filename=1647205300778.png or https://bering-reservations.s3.us-west-2.amazonaws.com/images/
+              console.log(res);
+              this.imgSrc='/png?filename=' + filename;
+              this.sms.mediaUrl = 'https://beringair.xyz:58785/png?filename=' + filename;
+            },
+            (err)=>{console.log(err)});
+          });
+          break;
         }
       }
       
@@ -321,7 +326,6 @@
       if (!message) message={mediaUrl:this.imgSrc};
       this.$window.open(message.mediaUrl, '_blank');
     }
-    
   }
 
   angular.module('newsimpleApp')

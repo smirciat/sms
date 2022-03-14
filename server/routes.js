@@ -11,6 +11,11 @@ import lusca from 'lusca';
 export default function(app) {
   
   app.use('/api/sms', require('./api/sm'));
+  
+  app.get('/png', function(req, res){
+    if (req.query) res.sendFile("./png/" + req.query.filename, {root: __dirname});
+    else res.status(500);
+  });
 
   app.use('/auth', require('./auth').default);
   
