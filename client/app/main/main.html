@@ -11,7 +11,7 @@
     <input ng-if="!$ctrl.img()" class="space narrow" type=text placeholder="Paste Image Here" tooltip-placement="bottom" uib-tooltip="Image here" id="image"
        ng-paste="$ctrl.paste($event)">
     <img ng-if="$ctrl.img()" class="thumbnail" ng-src="{{$ctrl.imgSrc}}" ng-click="$ctrl.openMedia(null)">
-    <button class="btn btn-success space" tooltip-placement="bottom" uib-tooltip="Click to Send" ng-click="$ctrl.send()">Send</button>
+    <button class="btn btn-success space" tooltip-placement="bottom" uib-tooltip="Click to Send" ng-click="$ctrl.send()" ng-disabled="$ctrl.sending">Send</button>
     <a href="/phoneName" class="space"><button class="btn btn-warning" tooltip-placement="bottom" uib-tooltip="Click to Edit Names and Numbers" ng-click="$ctrl.undo()">Names/Numbers</button></a>
     <button ng-if="false" class="btn btn-link space" tooltip-placement="top" uib-tooltip="Select from this list to show only one conversation.  Select `All` to show everything again.">
       <ul class="nav navbar-nav">    

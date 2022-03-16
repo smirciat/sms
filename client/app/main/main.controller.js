@@ -16,6 +16,7 @@
       this.webNotification=webNotification;
       this.showing=false;
       this.zoomed=false;
+      this.sending=false;
       
       $scope.$on('$destroy', function() {
         socket.unsyncUpdates('thing');
@@ -174,7 +175,7 @@
         
         this.$http.post('/api/sms/all').then((response)=>{
           response.data=response.data.filter(sm=>{
-            return !sm.autoSMS;
+            return !sm.autoSMS&&sm.from;
           });
           if (number==="") this.messages=response.data;
           else {
@@ -188,8 +189,11 @@
           this.names.unshift({name:'All',phone:''});
           this.socket.unsyncUpdates('sm');
           this.socket.syncUpdates('sm', this.messages, (event, item, array)=>{
-             var from = item.fromName||"";
-             if (!from||from==="") from=item.from;
+            var from=item.from;
+            var namesFrom = this.names.filter((name)=>{
+              return name.phone===item.from;
+            });
+            if (namesFrom.length>0) from = namesFrom[0].name;
                  if (event==='created'&&item.from!=='+12694423187'&&item.from!='+19074855026') {
                    var showing=false;
                    this.webNotification.showNotification('New SMS Message', {
@@ -208,16 +212,16 @@
                             console.log('Notification Shown.' + from);
                             if (from==='+19074855026') hide();
         
-                            var int=setInterval(function hideNotification() {
+                            //var int=setInterval(function hideNotification() {
                                 //console.log('Hiding notification....');
-                                console.log( showing);
-                                if ( showing) {
-                                  hide();
-                                   showing=false;
-                                  clearInterval(int); 
-                                }
+                            //    console.log( showing);
+                            //    if ( showing) {
+                            //      hide();
+                            //       showing=false;
+                            //      clearInterval(int); 
+                            //    }
                                 //hide(); //manually close the notification (you can skip this if you use the autoClose option)
-                            }, 10*1000);
+                            //}, 10*1000);
                         }
                     });
     
@@ -231,6 +235,20 @@
     
      resort(item){
           this.insertNames();
+          
+          var matchTo,matchFrom=false;
+          this.messages.forEach(message=>{
+            //only display twilio hosted images, delete this line if you change your mind
+            if (message.mediaUrl&&message.mediaUrl.substring(12,18)!=='twilio') message.mediaUrl='';
+            matchTo=matchFrom=false;
+            this.names.forEach(name=>{
+              if (name.phone===message.to) matchTo=true;
+              if (name.phone===message.from) matchFrom=true;
+            });
+            if (!matchTo) this.names.push({name:message.to,phone:message.to});
+            if (!matchFrom) this.names.push({name:message.from,phone:message.from});
+          });
+          
           var tempNameArr=[];
           this.names.forEach((name)=>{
             var messagesMatch = this.messages.filter(sm=>{
@@ -266,6 +284,7 @@
      }
      
      send(){
+      this.sending=true;
       this.sms.sent = this.moment().toDate();
       switch (this.sms.to.length){
         case 7: this.sms.to = '+1907' + this.sms.to;
@@ -276,7 +295,7 @@
             break;
         default: break;
       }
-      if (this.sms.to&&this.sms.to.length>6) {
+      if (this.sms.to&&this.sms.to.length>6&&(this.sms.body||this.sms.mediaUrl)) {
         this.$http.post('/api/sms/twilio',this.sms).then((res)=>{
           //this.refresh("");
           this.sms = {};
@@ -284,10 +303,15 @@
           this.sms.body="";
           this.sms.mediaUrl="";
           this.imgSrc="";
-        },(err)=>{console.log(err)});
+          this.sending=false;
+        },(err)=>{
+          console.log(err);
+          this.sending=false;
+          });
       }
       else {
         alert("Check that you have a message to send first!");
+        this.sending=false;
       }
     }
     
@@ -299,6 +323,8 @@
         var namesTo = this.names.filter((name)=>{
           return name.phone===message.to;
         });
+        message.fromName = message.from;
+        message.toName = message.to;
         if (namesFrom.length>0) message.fromName = namesFrom[0].name;
         if (namesTo.length>0) message.toName = namesTo[0].name;
       });

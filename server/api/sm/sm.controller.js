@@ -18,6 +18,8 @@ var client = require('twilio')(
   process.env.TWILIO_ACCOUNT_SID,
   process.env.TWILIO_AUTH_TOKEN
 );
+var fetch = require('node-fetch');
+var base64 = require('base-64');
 //var AWS = require('aws-sdk');
 //AWS.config.update({
 //        accessKeyId:  process.env.AWS_ACCESS_KEY_ID,
@@ -126,23 +128,50 @@ export function image(req, res) {
 // Creates a new Sm in the DB
 export function create(req, res) {
   req.body.from = process.env.TWILIO_PHONE_NUMBER;
-  client.messages.create({
-    from: req.body.from,
+  var params = {
+    from: req.body.from ,
     to: req.body.to,
-    mediaUrl:req.body.mediaUrl,
+    //mediaUrl:req.body.mediaUrl,
     body: req.body.body
-  }, (err, message)=>{
+  };
+  var timeout=0;
+  if (req.body.mediaUrl&&req.body.mediaUrl!==" ") {
+    params.mediaUrl=req.body.mediaUrl;
+    timeout=2000;
+  }
+  client.messages.create(params, (err, message)=>{
       if(err) {
           console.log('Failed to create at Twilio');
-          //console.error(err.message);
+          console.error(err.message);
       }
       else{
-        console.log(message);
+        var url='https://api.twilio.com/' + message.subresourceUris.media;
+        var stub = url.replace('.json','');
+        console.log(url);
+        let headers = new fetch.Headers();
+        headers.append('Authorization', 'Basic ' + base64.encode(process.env.TWILIO_ACCOUNT_SID + ":" + process.env.TWILIO_AUTH_TOKEN));
+        setTimeout(()=>{
+          fetch(url, 
+            {method: 'GET', headers: headers})
+          .then(response => response.json())
+          .then(json => {
+            if (json.media_list&&json.media_list.length>0) {
+              req.body.mediaUrl = stub + '/' + json.media_list[0].sid;
+              //console.log(mediaUrl);
+            }
+            Sm.create(req.body)
+              .then(responseWithResult(res, 201))
+              .catch(handleError(res));
+          })
+          .catch(err=>{
+            console.log(err);
+            Sm.create(req.body)
+              .then(responseWithResult(res, 201))
+              .catch(handleError(res));
+          });
+        },timeout);
       }
   });
-  return Sm.create(req.body)
-    .then(responseWithResult(res, 201))
-    .catch(handleError(res));
 }
 
 // Creates a new Sm in the DB

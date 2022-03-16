@@ -23,7 +23,7 @@ class PhoneNameComponent {
         this.names=response.data.sort(function(a,b){
           return a.name.localeCompare(b.name);
         });
-        console.log(this.names);
+        //console.log(this.names);
       });
   }
   
