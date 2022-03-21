@@ -306,6 +306,7 @@
           this.sending=false;
         },(err)=>{
           console.log(err);
+          alert('Error sending SMS through Twilio! \r\n' + err.data);
           this.sending=false;
           });
       }

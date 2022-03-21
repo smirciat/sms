@@ -59,7 +59,20 @@
                   <td>{{message.sent|date:'medium'}}</td>
               </tr>
           </tbody>
-      </table>
+          <tfoot>
+              <tr>
+                  <th>#</th>
+                  <th>To - Number</th>
+                  <th>To - Name</th>
+                  <th></th>
+                  <th>From - Number</th>
+                  <th>From - Name</th>
+                  <th>Body</th>
+                  <th>Image</th>
+                  <th>Sent</th>
+              </tr>
+          </tfoot>
+      </table>  
       <div ng-hide="name.hidden" ng-class="$ctrl.newMessage(name)">
         <h4 style="display:inline;"><button class="btn btn-success" style="margin-right:10px;" ng-click="$ctrl.toggle(name)" tooltip-placement="right" uib-tooltip="Click to Show/Hide">==></button>{{name.name.name}}</h4>
         <h5 style="display:inline; margin-left:20px;">{{name.messages[(name.messages.length-1)].sent | date:"shortTime"}}</h5>

@@ -13,7 +13,6 @@ import _ from 'lodash';
 var sqldb = require('../../sqldb');
 var fs = require('fs');
 var Sm = sqldb.Sm;
-var twilio1=require('twilio');
 var client = require('twilio')(
   process.env.TWILIO_ACCOUNT_SID,
   process.env.TWILIO_AUTH_TOKEN
@@ -37,8 +36,6 @@ function handleError(res, statusCode) {
 }
 
 function responseWithResult(res, statusCode) {
-  
-    console.log(res);
   statusCode = statusCode || 200;
   return function(entity) {
     if (entity) {
@@ -80,7 +77,7 @@ function removeEntity(res) {
 // Gets a list of Sms
 export function index(req, res) {
   Sm.findAll({
-    order:[['sent','DESC']],
+    order:[['_id','DESC']],
     limit:2000
   })
     .then(responseWithResult(res))
@@ -142,7 +139,8 @@ export function create(req, res) {
   client.messages.create(params, (err, message)=>{
       if(err) {
           console.log('Failed to create at Twilio');
-          console.error(err.message);
+          console.error(err);
+          res.status(err.status).send(err.message);
       }
       else{
         var url='https://api.twilio.com/' + message.subresourceUris.media;
