@@ -11,6 +11,7 @@
       this.$timeout=$timeout;
       this.$window=$window;
       this.awesomeThings = [];
+      this.Auth=Auth;
       this.isAdmin = Auth.isAdmin;
       this.moment=moment;
       this.webNotification=webNotification;
@@ -30,8 +31,8 @@
       this.messages=[];
       this.names=[];
       this.nameArr=[];
-      
-      
+      this.phone='';
+      this.id='';
     }
 
     $onInit() {
@@ -46,7 +47,12 @@
       //isAdminAsync(this.isAdmin).then(res=>{
       //  if (res) this.refresh("");
       //});
-      this.refresh("");
+      this.Auth.getCurrentUser((res)=>{
+        this.phone=res.phone;
+        this.id=res._id;
+        this.refresh("");
+      });
+      
       this.loginTimeout=this.$timeout(function(){
         window.location.reload();
       },14*60*60*1000);
@@ -54,7 +60,7 @@
           .then(response => {
             this.awesomeThings = response.data;
           this.socket.syncUpdates('thing', this.awesomeThings);
-        }); 
+        });
     }
 
     addThing() {
@@ -71,7 +77,7 @@
     }
     
     class(message){
-      if (message.to==='+12694423187'||message.to==='+19073022700') return 'danger';
+      if (message.to===this.phone||message.to==='+19073022700') return 'danger';
       else return "success";
     }
     
@@ -168,12 +174,12 @@
     refresh(number){
       this.nameArr=[];
       if (number===null) number="";
-      this.$http.get('/api/smsNames').then((response)=>{
+      this.$http.post('/api/smsNames/mine',{id:this.id}).then((response)=>{
         this.names=response.data.sort((a,b)=>{
           return a.name.localeCompare(b.name);
         });
         
-        this.$http.post('/api/sms/all').then((response)=>{
+        this.$http.post('/api/sms/all',{phone:this.phone}).then((response)=>{
           response.data=response.data.filter(sm=>{
             return !sm.autoSMS&&sm.from;
           });
@@ -189,12 +195,19 @@
           this.names.unshift({name:'All',phone:''});
           this.socket.unsyncUpdates('sm');
           this.socket.syncUpdates('sm', this.messages, (event, item, array)=>{
+            //if item doesn't have this.phone, take it out of this.messages
+            if (item.from!==this.phone&&item.to!==this.phone) {
+              this.messages=this.messages.filter((message)=>{
+                return message._id!==item._id;
+              });
+              return;
+            }
             var from=item.from;
             var namesFrom = this.names.filter((name)=>{
               return name.phone===item.from;
             });
             if (namesFrom.length>0) from = namesFrom[0].name;
-                 if (event==='created'&&item.from!=='+12694423187'&&item.from!='+19074855026') {
+                 if (event==='created'&&item.from!==this.phone&&item.from!='+19074855026') {
                    var showing=false;
                    this.webNotification.showNotification('New SMS Message', {
                         body: 'From: ' + from + '\nMsg: ' + item.body,
@@ -286,6 +299,7 @@
      send(){
       this.sending=true;
       this.sms.sent = this.moment().toDate();
+      this.sms.from=this.phone;
       switch (this.sms.to.length){
         case 7: this.sms.to = '+1907' + this.sms.to;
             break;
@@ -341,7 +355,7 @@
     
     reply(message){
       var from = message.from;
-      if (from==="+12694423187") from=message.to;
+      if (from===this.phone) from=message.to;
       this.sms.to=from;
     }
     

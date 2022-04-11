@@ -16,6 +16,7 @@ module.exports = function(sequelize, DataTypes) {
       autoIncrement: true
     },
     name: DataTypes.STRING,
+    phone: DataTypes.STRING,
     email: {
       type: DataTypes.STRING,
       unique: {
@@ -48,7 +49,8 @@ module.exports = function(sequelize, DataTypes) {
       profile: function() {
         return {
           'name': this.name,
-          'role': this.role
+          'role': this.role,
+          'phone': this.phone
         };
       },
 

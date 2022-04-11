@@ -10,6 +10,7 @@ export default function(sequelize, DataTypes) {
     },
     name: DataTypes.STRING,
     phone: DataTypes.STRING,
-    active: DataTypes.BOOLEAN
+    active: DataTypes.BOOLEAN,
+    owner: DataTypes.STRING
   });
 }

@@ -61,7 +61,11 @@ function removeEntity(res) {
 
 // Gets a list of SmsNames
 export function index(req, res) {
-  SmsName.findAll()
+  var id;
+  if (req.body&&req.body.id) id=req.body.id.toString();
+  SmsName.findAll(
+    {where: {owner:id} }
+    )
     .then(responseWithResult(res))
     .catch(handleError(res));
 }

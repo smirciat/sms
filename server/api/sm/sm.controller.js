@@ -76,7 +76,9 @@ function removeEntity(res) {
 
 // Gets a list of Sms
 export function index(req, res) {
+  var phone = req.body.phone;
   Sm.findAll({
+    where: {$or: [{from: phone}, {to: phone}]},
     order:[['_id','DESC']],
     limit:2000
   })
@@ -124,7 +126,7 @@ export function image(req, res) {
 
 // Creates a new Sm in the DB
 export function create(req, res) {
-  req.body.from = process.env.TWILIO_PHONE_NUMBER;
+  //req.body.from = process.env.TWILIO_PHONE_NUMBER;
   var params = {
     from: req.body.from ,
     to: req.body.to,

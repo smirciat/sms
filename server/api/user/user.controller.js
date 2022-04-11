@@ -126,6 +126,7 @@ export function me(req, res, next) {
       _id: userId
     },
     attributes: [
+      'phone',
       '_id',
       'name',
       'email',
