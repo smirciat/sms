@@ -11,12 +11,15 @@
     <table class="table table-striped">
         <thead>
             <tr>
+                <th>Include</th>
                 <th>Name</th>
                 <th>Phone</th>
             </tr>
         </thead>
         <tbody>
             <tr ng-repeat="name in phoneNameCtrl.names">
+                <td><input type="checkbox" tooltip-placement="bottom" uib-tooltip="Check if you want to include this person in the SMS" id="multiple" 
+                     ng-model="name.include" ng-click="phoneNameCtrl.clicked()"></td>
                 <td>{{name.name}}</td>
                 <td>{{name.phone}}</td>
                 <td><button class="btn btn-danger" ng-click="phoneNameCtrl.deleteName(name)">Delete Name</button></td>

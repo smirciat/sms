@@ -3,13 +3,15 @@
 (function(){
 
 class PhoneNameComponent {
-  constructor($scope,$http,socket,Auth) {
+  constructor($scope,$http,socket,Auth,$window) {
     this.$scope=$scope;
     this.$http=$http;
     this.socket=socket;
+    this.includedNamesArr=[];
     this.names=[];
     this.newName={};
     this.Auth=Auth;
+    this.$window=$window;
     this.id='';
     
   }
@@ -24,6 +26,12 @@ class PhoneNameComponent {
       this.$http.post('/api/smsNames/mine',{id:this.id}).then((response)=>{
         this.names=response.data.sort(function(a,b){
           return a.name.localeCompare(b.name);
+        });
+        this.includedNamesArr = angular.fromJson(this.$window.localStorage.getItem("includedNames"));
+        this.names.forEach((name)=>{
+          this.includedNamesArr.forEach((includedName)=>{
+            if (name._id===includedName._id) name.include=true;
+          });
         });
         //console.log(this.names);
       });
@@ -44,6 +52,15 @@ class PhoneNameComponent {
     this.$http.delete('/api/smsNames/'+name._id).then((response)=>{
       this.getNames();
     });
+  }
+  
+  clicked(){
+    //console.log(this.names);
+    var array=this.names.filter((name)=>{
+      return name.include && name.phone!=="+12694423187";
+    });
+    this.$window.localStorage.setItem('includedNames',angular.toJson(array));
+    
   }
 }
 

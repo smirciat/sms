@@ -134,43 +134,61 @@ export function create(req, res) {
     body: req.body.body
   };
   var timeout=0;
-  if (req.body.mediaUrl&&req.body.mediaUrl!==" ") {
+  if (req.body.mediaUrl && req.body.mediaUrl!==" " && !req.body.autoSMS) {
     params.mediaUrl=req.body.mediaUrl;
     timeout=2000;
   }
-  client.messages.create(params, (err, message)=>{
-      if(err) {
-          console.log('Failed to create at Twilio');
-          console.error(err);
-          res.status(err.status).send(err.message);
-      }
-      else{
-        var url='https://api.twilio.com/' + message.subresourceUris.media;
-        var stub = url.replace('.json','');
-        console.log(url);
-        let headers = new fetch.Headers();
-        headers.append('Authorization', 'Basic ' + base64.encode(process.env.TWILIO_ACCOUNT_SID + ":" + process.env.TWILIO_AUTH_TOKEN));
-        setTimeout(()=>{
-          fetch(url, 
-            {method: 'GET', headers: headers})
-          .then(response => response.json())
-          .then(json => {
-            if (json.media_list&&json.media_list.length>0) {
-              req.body.mediaUrl = stub + '/' + json.media_list[0].sid;
-              //console.log(mediaUrl);
-            }
-            Sm.create(req.body)
-              .then(responseWithResult(res, 201))
-              .catch(handleError(res));
-          })
-          .catch(err=>{
-            console.log(err);
-            Sm.create(req.body)
-              .then(responseWithResult(res, 201))
-              .catch(handleError(res));
-          });
-        },timeout);
-      }
+  var message=JSON.parse(JSON.stringify(req.body));
+  var pair={};
+  pair.message=message;
+  pair.params=params;
+  var array=[pair];
+  if (message.autoSMS) {
+    array=[];
+    req.body.multiple.forEach((name)=>{
+      params.to=name.phone;
+      message.to=name.phone;
+      pair={};
+      pair.message=JSON.parse(JSON.stringify(message));
+      pair.params=JSON.parse(JSON.stringify(params));
+      array.push(pair);
+    });
+  }
+  array.forEach((p)=>{
+    client.messages.create(p.params, (err, message)=>{
+        if(err) {
+            console.log('Failed to create at Twilio');
+            console.error(err);
+            res.status(err.status).send(err.message);
+        }
+        else{
+          var url='https://api.twilio.com' + message.subresourceUris.media;
+          var stub = url.replace('.json','');
+          console.log(url);
+          let headers = new fetch.Headers();
+          headers.append('Authorization', 'Basic ' + base64.encode(process.env.TWILIO_ACCOUNT_SID + ":" + process.env.TWILIO_AUTH_TOKEN));
+          setTimeout(()=>{
+            fetch(url, 
+              {method: 'GET', headers: headers})
+            .then(response => response.json())
+            .then(json => {
+              if (json.media_list&&json.media_list.length>0) {
+                p.message.mediaUrl = stub + '/' + json.media_list[0].sid;
+                //console.log(mediaUrl);
+              }
+              Sm.create(p.message)
+                .then(responseWithResult(res, 201))
+                .catch(handleError(res));
+            })
+            .catch(err=>{
+              console.log(err);
+              Sm.create(p.message)
+                .then(responseWithResult(res, 201))
+                .catch(handleError(res));
+            });
+          },timeout);
+        }
+    });
   });
 }
 

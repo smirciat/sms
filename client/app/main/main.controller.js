@@ -24,6 +24,8 @@
         socket.unsyncUpdates('sm');
       });
       this.sms = {};
+      this.sms.autoSMS=false;
+      this.sms.multiple=[];
       this.sms.to='+1';
       this.sms.body="";
       this.sms.mediaUrl="";      
@@ -36,20 +38,9 @@
     }
 
     $onInit() {
-      //async function isAdminAsync(callback){
-      //  try {
-      //    return callback();
-      //  }
-      //  catch (err){
-      //    console.log(err);
-      //  }
-      //};
-      //isAdminAsync(this.isAdmin).then(res=>{
-      //  if (res) this.refresh("");
-      //});
-      this.Auth.getCurrentUser((res)=>{
-        this.phone=res.phone;
-        this.id=res._id;
+      this.Auth.getCurrentUser((user)=>{
+        this.phone=user.phone;
+        this.id=user._id;
         this.refresh("");
       });
       
@@ -181,7 +172,8 @@
         
         this.$http.post('/api/sms/all',{phone:this.phone}).then((response)=>{
           response.data=response.data.filter(sm=>{
-            return !sm.autoSMS&&sm.from;
+            //return !sm.autoSMS&&sm.from;
+            return sm.from;
           });
           if (number==="") this.messages=response.data;
           else {
@@ -208,12 +200,12 @@
             });
             if (namesFrom.length>0) from = namesFrom[0].name;
                  if (event==='created'&&item.from!==this.phone&&item.from!='+19074855026') {
-                   var showing=false;
+                   //var showing=false;
                    this.webNotification.showNotification('New SMS Message', {
                         body: 'From: ' + from + '\nMsg: ' + item.body,
                         icon: '../assets/images/Icon-512.png',
                         onClick: function onNotificationClicked() {
-                            showing=true;
+                            //showing=true;
                             console.log('Notification clicked.');
                         },
                         requireInteraction: true   
@@ -310,10 +302,13 @@
         default: break;
       }
       if (this.sms.to&&this.sms.to.length>6&&(this.sms.body||this.sms.mediaUrl)) {
+        //console.log(this.sms)
         this.$http.post('/api/sms/twilio',this.sms).then((res)=>{
           //this.refresh("");
           this.sms = {};
           this.sms.to='+1';
+          this.sms.autoSMS=false;
+          this.sms.multiple=[];
           this.sms.body="";
           this.sms.mediaUrl="";
           this.imgSrc="";
@@ -366,6 +361,18 @@
     openMedia(message){
       if (!message) message={mediaUrl:this.imgSrc};
       this.$window.open(message.mediaUrl, '_blank');
+    }
+    
+    clickMultiple(){
+      if (this.sms.autoSMS) {
+        this.sms.multiple=angular.fromJson(this.$window.localStorage.getItem("includedNames"));
+        this.sms.to="Multiple";
+      }
+      else {
+        this.sms.multiple=[];
+        this.sms.to="+1";
+      }
+      //this.$timeout(()=>{console.log(this.sms.multiple)},0);
     }
   }
 
