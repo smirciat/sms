@@ -14,8 +14,8 @@ import https from 'https';
 
 //var privateKey  = fs.readFileSync('server/secret/server.key', 'utf8');
 //var certificate = fs.readFileSync('server/secret/server.cert', 'utf8');
-var privateKey  = fs.readFileSync('/etc/letsencrypt/live/beringair.xyz/privkey.pem', 'utf8');
-var certificate = fs.readFileSync('/etc/letsencrypt/live/beringair.xyz//fullchain.pem', 'utf8');
+var privateKey  = fs.readFileSync('/etc/letsencrypt/live/beringair.ddns.net/privkey.pem', 'utf8');
+var certificate = fs.readFileSync('/etc/letsencrypt/live/beringair.ddns.net/fullchain.pem', 'utf8');
 
 var credentials = {key: privateKey, cert: certificate};
 

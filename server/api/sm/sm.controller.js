@@ -124,6 +124,12 @@ export function image(req, res) {
     //});
 }
 
+export function localCreate(req, res) {
+  return Sm.create(req.body)
+    .then(responseWithResult(res, 201))
+    .catch(handleError(res));
+}
+
 // Creates a new Sm in the DB
 export function create(req, res) {
   //req.body.from = process.env.TWILIO_PHONE_NUMBER;

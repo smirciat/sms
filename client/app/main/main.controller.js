@@ -102,7 +102,7 @@
              //https://beringair.xyz:58785/png?filename=1647205300778.png or https://bering-reservations.s3.us-west-2.amazonaws.com/images/
               console.log(res);
               this.imgSrc='/png?filename=' + filename;
-              this.sms.mediaUrl = 'https://beringair.xyz:58785/png?filename=' + filename;
+              this.sms.mediaUrl = 'https://beringair.ddns.net:58785/png?filename=' + filename;
             },
             (err)=>{console.log(err)});
           });
@@ -250,8 +250,8 @@
               if (name.phone===message.to) matchTo=true;
               if (name.phone===message.from) matchFrom=true;
             });
-            if (!matchTo) this.names.push({name:message.to,phone:message.to});
-            if (!matchFrom) this.names.push({name:message.from,phone:message.from});
+              if (!matchTo&&message.to!==this.phone) this.names.push({name:message.to,phone:message.to});
+              if (!matchFrom&&message.from!==this.phone) this.names.push({name:message.from,phone:message.from});
           });
           
           var tempNameArr=[];
@@ -301,27 +301,53 @@
             break;
         default: break;
       }
-      if (this.sms.to&&this.sms.to.length>6&&(this.sms.body||this.sms.mediaUrl)) {
-        //console.log(this.sms)
-        this.$http.post('/api/sms/twilio',this.sms).then((res)=>{
-          //this.refresh("");
-          this.sms = {};
-          this.sms.to='+1';
-          this.sms.autoSMS=false;
-          this.sms.multiple=[];
-          this.sms.body="";
-          this.sms.mediaUrl="";
-          this.imgSrc="";
+      if (this.sms.to==='+1reservations'||this.sms.to==='+12694423187') {
+        if (this.sms.to&&this.sms.to.length>6&&(this.sms.body||this.sms.mediaUrl)) {
+          //console.log(this.sms)
+          this.$http.post('/api/sms/local',this.sms).then((res)=>{
+            //this.refresh("");
+            this.sms = {};
+            this.sms.to='+1';
+            this.sms.autoSMS=false;
+            this.sms.multiple=[];
+            this.sms.body="";
+            this.sms.mediaUrl="";
+            this.imgSrc="";
+            this.sending=false;
+          },(err)=>{
+            console.log(err);
+            alert('Error sending SMS through Twilio! \r\n' + err.data);
+            this.sending=false;
+            });
+        }
+        else {
+          alert("Check that you have a message to send first!");
           this.sending=false;
-        },(err)=>{
-          console.log(err);
-          alert('Error sending SMS through Twilio! \r\n' + err.data);
-          this.sending=false;
-          });
+        }
       }
       else {
-        alert("Check that you have a message to send first!");
-        this.sending=false;
+        if (this.sms.to&&this.sms.to.length>6&&(this.sms.body||this.sms.mediaUrl)) {
+          //console.log(this.sms)
+          this.$http.post('/api/sms/twilio',this.sms).then((res)=>{
+            //this.refresh("");
+            this.sms = {};
+            this.sms.to='+1';
+            this.sms.autoSMS=false;
+            this.sms.multiple=[];
+            this.sms.body="";
+            this.sms.mediaUrl="";
+            this.imgSrc="";
+            this.sending=false;
+          },(err)=>{
+            console.log(err);
+            alert('Error sending SMS through Twilio! \r\n' + err.data);
+            this.sending=false;
+            });
+        }
+        else {
+          alert("Check that you have a message to send first!");
+          this.sending=false;
+        }
       }
     }
     
