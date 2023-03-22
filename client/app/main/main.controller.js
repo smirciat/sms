@@ -244,7 +244,7 @@
           var matchTo,matchFrom=false;
           this.messages.forEach(message=>{
             //only display twilio hosted images, delete this line if you change your mind
-            if (message.mediaUrl&&message.mediaUrl.substring(12,18)!=='twilio') message.mediaUrl='';
+            //if (message.mediaUrl&&message.mediaUrl.substring(12,18)!=='twilio') message.mediaUrl='';
             matchTo=matchFrom=false;
             this.names.forEach(name=>{
               if (name.phone===message.to) matchTo=true;
@@ -286,6 +286,7 @@
           });
           
           this.nameArr=tempNameArr;
+          //console.log(this.nameArr[0]);
      }
      
      send(){
@@ -301,9 +302,10 @@
             break;
         default: break;
       }
-      if (this.sms.to==='+1reservations'||this.sms.to==='+12694423187') {
-        if (this.sms.to&&this.sms.to.length>6&&(this.sms.body||this.sms.mediaUrl)) {
-          //console.log(this.sms)
+      //if (this.sms.mediaUrl) this.sms.autoSMS=true;
+      if (this.sms.to&&this.sms.to.slice(0,3)==='+1r'||this.sms.to==='+12694423187') {
+        if (this.sms.to&&this.sms.to.length>5&&(this.sms.body||this.sms.mediaUrl)) {
+          //this.sms.mediaUrl=this.sms.mediaUrl.slice(32);
           this.$http.post('/api/sms/local',this.sms).then((res)=>{
             //this.refresh("");
             this.sms = {};
