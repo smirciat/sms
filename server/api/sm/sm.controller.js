@@ -162,7 +162,7 @@ export function create(req, res) {
   }
   
   array.forEach((p,index)=>{
-    //setTimeout(()=>{
+    setTimeout(()=>{
       client.messages.create(p.params, (err, message)=>{
         if(err) {
             console.log('Failed to create at Twilio');
@@ -170,6 +170,7 @@ export function create(req, res) {
             res.status(err.status).send(err.message);
         }
         else{
+          console.log('message ' + index + ' sent.');
           var url='https://api.twilio.com' + message.subresourceUris.media;
           var stub = url.replace('.json','');
           console.log(url);
@@ -197,7 +198,7 @@ export function create(req, res) {
           },timeout);
         }
       });
-    //},index*1500);  
+    },index*timeout);
   });
 }
 
