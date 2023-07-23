@@ -19,8 +19,6 @@ var certificate = fs.readFileSync('/etc/letsencrypt/live/beringair.ddns.net/full
 
 var credentials = {key: privateKey, cert: certificate};
 
-//console.log(config);
-
 // Populate databases with sample data
 if (config.seedDB) { require('./config/seed'); }
 
@@ -35,6 +33,7 @@ var socketio = require('socket.io')(server, {
 require('./config/socketio').default(socketio);
 require('./config/express').default(app);
 require('./routes').default(app);
+
 
 // Start server
 function startServer() {

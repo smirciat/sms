@@ -160,8 +160,10 @@ export function create(req, res) {
       array.push(pair);
     });
   }
-  array.forEach((p)=>{
-    client.messages.create(p.params, (err, message)=>{
+  
+  array.forEach((p,index)=>{
+    //setTimeout(()=>{
+      client.messages.create(p.params, (err, message)=>{
         if(err) {
             console.log('Failed to create at Twilio');
             console.error(err);
@@ -194,8 +196,9 @@ export function create(req, res) {
             });
           },timeout);
         }
-    });
-  });
+      });
+    },index*1500);  
+  //});
 }
 
 // Creates a new Sm in the DB
