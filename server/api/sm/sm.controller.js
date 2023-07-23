@@ -197,8 +197,8 @@ export function create(req, res) {
           },timeout);
         }
       });
-    },index*1500);  
-  //});
+    //},index*1500);  
+  });
 }
 
 // Creates a new Sm in the DB
