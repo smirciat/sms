@@ -64,7 +64,8 @@ export function index(req, res) {
   var id;
   if (req.body&&req.body.id) id=req.body.id.toString();
   SmsName.findAll(
-    {where: {owner:id} }
+    //{where: {owner:id}}
+    //{where: {$or:[{owner:'4'},{owner:'12'} ]}}
     )
     .then(responseWithResult(res))
     .catch(handleError(res));

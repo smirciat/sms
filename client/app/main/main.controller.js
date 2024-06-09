@@ -162,14 +162,34 @@
       this.alltimeout=this.$timeout(timeout,60000);
     }
     
+    removeDuplicates(){
+      var soFar=[];
+      var index;
+      this.names.forEach(name=>{
+        index=soFar.map(e => e.phone).indexOf(name.phone);
+        if (index&&index>=0) {
+          console.log('duplicate');
+        }
+        else {
+          soFar.push(name);
+        }
+      });
+      this.names=soFar;
+    }
+    
     refresh(number){
       this.nameArr=[];
       if (number===null) number="";
       this.$http.post('/api/smsNames/mine',{id:this.id}).then((response)=>{
-        this.names=response.data.sort((a,b)=>{
+        this.names=response.data.filter((name)=>{
+          return true;// (name.phone!==this.phone);
+        });
+        //filter out duplicate names by phone number
+        this.removeDuplicates();
+        //this.names.forEach(name=>{});
+        this.names.sort((a,b)=>{
           return a.name.localeCompare(b.name);
         });
-        
         this.$http.post('/api/sms/all',{phone:this.phone}).then((response)=>{
           response.data=response.data.filter(sm=>{
             //return !sm.autoSMS&&sm.from;
@@ -268,7 +288,6 @@
             var hidden = false;
             var isNew=false;
             if (this.zoomed) hidden=true;
-            //console.log(this.nameArr)
             var foundIndex=this.nameArr.findIndex(x=>x.name.name===name.name);
             if (foundIndex!==-1) {
               expanded=this.nameArr[foundIndex].expanded;
@@ -276,7 +295,8 @@
               isNew=this.nameArr[foundIndex].isNew;
               if (this.nameArr[foundIndex].name.phone===item.to||this.nameArr[foundIndex].name.phone===item.from) isNew=true;
             }
-            if (name.name!=="Bering Air"&&messagesMatch.length>0) tempNameArr.push({name:name,messages:messagesMatch,expanded:expanded,hidden:hidden,isNew:isNew});
+            if (this.phone!==name.phone&&messagesMatch.length>0) tempNameArr.push({name:name,messages:messagesMatch,expanded:expanded,hidden:hidden,isNew:isNew});
+            //if (name.name!=="Bering Air"&&messagesMatch.length>0) tempNameArr.push({name:name,messages:messagesMatch,expanded:expanded,hidden:hidden,isNew:isNew});
           });
           
           tempNameArr.sort((a,b)=>{
@@ -303,7 +323,7 @@
         default: break;
       }
       //if (this.sms.mediaUrl) this.sms.autoSMS=true;
-      if (this.sms.to&&this.sms.to.slice(0,3)==='+1r'||this.sms.to==='+12694423187') {
+      if (this.sms.to&&this.sms.to.slice(0,3)==='+1r'||this.sms.to===this.phone) {
         if (this.sms.to&&this.sms.to.length>5&&(this.sms.body||this.sms.mediaUrl)) {
           //this.sms.mediaUrl=this.sms.mediaUrl.slice(32);
           this.$http.post('/api/sms/local',this.sms).then((res)=>{
@@ -389,6 +409,14 @@
     openMedia(message){
       if (!message) message={mediaUrl:this.imgSrc};
       this.$window.open(message.mediaUrl, '_blank');
+    }
+    
+    phoneEntered(){
+      
+    }
+    
+    clickBlast(){
+      
     }
     
     clickMultiple(){

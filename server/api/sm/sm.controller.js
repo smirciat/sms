@@ -10,23 +10,23 @@
 'use strict';
 
 import _ from 'lodash';
-var sqldb = require('../../sqldb');
-var fs = require('fs');
-var Sm = sqldb.Sm;
-var client = require('twilio')(
+let sqldb = require('../../sqldb');
+let fs = require('fs');
+let Sm = sqldb.Sm;
+let client = require('twilio')(
   process.env.TWILIO_ACCOUNT_SID,
   process.env.TWILIO_AUTH_TOKEN
 );
-var fetch = require('node-fetch');
-var base64 = require('base-64');
-//var AWS = require('aws-sdk');
+let fetch = require('node-fetch');
+let base64 = require('base-64');
+//let AWS = require('aws-sdk');
 //AWS.config.update({
 //        accessKeyId:  process.env.AWS_ACCESS_KEY_ID,
 //        secretAccessKey:  process.env.AWS_SECRET_ACCESS_KEY,
 //        region: 'us-west-2'
 //    });
 
-//var s3Bucket = new AWS.S3( { params: {Bucket: 'bering-reservations'} } );
+//let s3Bucket = new AWS.S3( { params: {Bucket: 'bering-reservations'} } );
 
 function handleError(res, statusCode) {
   statusCode = statusCode || 500;
@@ -38,7 +38,9 @@ function handleError(res, statusCode) {
 function responseWithResult(res, statusCode) {
   statusCode = statusCode || 200;
   return function(entity) {
-    if (entity) {
+    console.log(res.boolean);
+    if (entity&&!res.boolean) {
+      res.boolean=true;
       res.status(statusCode).json(entity);
     }
   };
@@ -76,7 +78,7 @@ function removeEntity(res) {
 
 // Gets a list of Sms
 export function index(req, res) {
-  var phone = req.body.phone;
+  let phone = req.body.phone;
   Sm.findAll({
     where: {$or: [{from: phone}, {to: phone}]},
     order:[['_id','DESC']],
@@ -100,7 +102,7 @@ export function show(req, res) {
 
 // Uploads an image to ./server/png/
 export function image(req, res) {
-  var buf=req.body.blob;
+  let buf=req.body.blob;
   buf = new Buffer(buf.replace(/^data:image\/\w+;base64,/, ""),'base64');
   fs.writeFile("./server/png/"+req.body.filename, buf, 'base64', (err)=> {
     if (err) {
@@ -111,7 +113,7 @@ export function image(req, res) {
         res.sendStatus(200);
       }
   });
-    var params = {
+    let params = {
       Bucket: 'bering-reservations',
       ACL: 'public-read',
       Key: 'images/' + req.body.filename,
@@ -131,24 +133,49 @@ export function localCreate(req, res) {
 }
 
 // Creates a new Sm in the DB
-export function create(req, res) {
+export function createOld(req, res) {
+  let sid,token;
+  if (req.body.from===process.env.TWILIO_PHONE_NUMBER){
+    console.log('reg TWILIO!');
+    sid=process.env.TWILIO_ACCOUNT_SID;
+    token=process.env.TWILIO_AUTH_TOKEN;
+    client = require('twilio')(
+      sid,token
+    );
+  }
+  if (req.body.from===process.env.TWILIO_PHONE_NUMBER_ALT){
+    console.log('ALT TWILIO!');
+    sid=process.env.TWILIO_ACCOUNT_SID_ALT;
+    token=process.env.TWILIO_AUTH_TOKEN_ALT;
+    client = require('twilio')(
+      sid,token
+    );
+  }
+  if (req.body.from===process.env.TWILIO_PHONE_NUMBER_COUNTER){
+    console.log('COUNTER TWILIO!');
+    sid=process.env.TWILIO_ACCOUNT_SID_COUNTER;
+    token=process.env.TWILIO_AUTH_TOKEN_COUNTER;
+    client = require('twilio')(
+      sid,token
+    );
+  }
   //req.body.from = process.env.TWILIO_PHONE_NUMBER;
-  var params = {
+  let params = {
     from: req.body.from ,
     to: req.body.to,
     //mediaUrl:req.body.mediaUrl,
     body: req.body.body
   };
-  var timeout=0;
+  let timeout=0;
   if (req.body.mediaUrl && req.body.mediaUrl!==" " && !req.body.autoSMS) {
     params.mediaUrl=req.body.mediaUrl;
     timeout=2000;
   }
-  var message=JSON.parse(JSON.stringify(req.body));
-  var pair={};
+  let message=JSON.parse(JSON.stringify(req.body));
+  let pair={};
   pair.message=message;
   pair.params=params;
-  var array=[pair];
+  let array=[pair];
   if (message.autoSMS) {
     array=[];
     req.body.multiple.forEach((name)=>{
@@ -163,19 +190,21 @@ export function create(req, res) {
   
   array.forEach((p,index)=>{
     setTimeout(()=>{
-      client.messages.create(p.params, (err, message)=>{
+      client.messages.create(p.params, (err, message)=>{//then/catch?
+        //err={status:400,message:"error"};
         if(err) {
             console.log('Failed to create at Twilio');
+            console.log(client);
             console.error(err);
             res.status(err.status).send(err.message);
         }
         else{
           console.log('message ' + index + ' sent.');
-          var url='https://api.twilio.com' + message.subresourceUris.media;
-          var stub = url.replace('.json','');
+          let url='https://api.twilio.com' + message.subresourceUris.media;
+          let stub = url.replace('.json','');
           console.log(url);
           let headers = new fetch.Headers();
-          headers.append('Authorization', 'Basic ' + base64.encode(process.env.TWILIO_ACCOUNT_SID + ":" + process.env.TWILIO_AUTH_TOKEN));
+          headers.append('Authorization', 'Basic ' + base64.encode(sid + ":" + token));
           setTimeout(()=>{
             fetch(url, 
               {method: 'GET', headers: headers})
@@ -198,13 +227,112 @@ export function create(req, res) {
           },timeout);
         }
       });
-    },index*timeout);
+    },index*2000);
+  });
+}
+
+// Creates a new Sm in the DB
+export function create(req, res) {
+  let sid,token;
+  if (req.body.from===process.env.TWILIO_PHONE_NUMBER){
+    console.log('reg TWILIO!');
+    sid=process.env.TWILIO_ACCOUNT_SID;
+    token=process.env.TWILIO_AUTH_TOKEN;
+    client = require('twilio')(
+      sid,token
+    );
+  }
+  if (req.body.from===process.env.TWILIO_PHONE_NUMBER_ALT){
+    console.log('ALT TWILIO!');
+    sid=process.env.TWILIO_ACCOUNT_SID_ALT;
+    token=process.env.TWILIO_AUTH_TOKEN_ALT;
+    client = require('twilio')(
+      sid,token
+    );
+  }
+  if (req.body.from===process.env.TWILIO_PHONE_NUMBER_COUNTER){
+    console.log('COUNTER TWILIO!');
+    sid=process.env.TWILIO_ACCOUNT_SID_COUNTER;
+    token=process.env.TWILIO_AUTH_TOKEN_COUNTER;
+    client = require('twilio')(
+      sid,token
+    );
+  }
+  //req.body.from = process.env.TWILIO_PHONE_NUMBER;
+  let params = {
+    from: req.body.from ,
+    to: req.body.to,
+    //mediaUrl:req.body.mediaUrl,
+    body: req.body.body
+  };
+  let timeout=0;
+  if (req.body.mediaUrl && req.body.mediaUrl!==" " && !req.body.autoSMS) {
+    params.mediaUrl=req.body.mediaUrl;
+    timeout=2000;
+  }
+  let message=JSON.parse(JSON.stringify(req.body));
+  let pair={};
+  pair.message=message;
+  pair.params=params;
+  let array=[pair];
+  if (message.autoSMS) {
+    array=[];
+    req.body.multiple.forEach((name)=>{
+      params.to=name.phone;
+      message.to=name.phone;
+      pair={};
+      pair.message=JSON.parse(JSON.stringify(message));
+      pair.params=JSON.parse(JSON.stringify(params));
+      array.push(pair);
+    });
+  }
+  
+  array.forEach((p,index)=>{
+    setTimeout(()=>{
+      client.messages.create(p.params).then(message=>{//, (err, message)=>{//then/catch?
+        console.log('message ' + index + ' sent.');
+        let url='https://api.twilio.com' + message.subresourceUris.media;
+        let stub = url.replace('.json','');
+        console.log(url);
+        let headers = new fetch.Headers();
+        headers.append('Authorization', 'Basic ' + base64.encode(sid + ":" + token));
+        setTimeout(()=>{
+          fetch(url, 
+            {method: 'GET', headers: headers})
+          .then(response => response.json())
+          .then(json => {
+            if (json.media_list&&json.media_list.length>0) {
+              p.message.mediaUrl = stub + '/' + json.media_list[0].sid;
+              //console.log(mediaUrl);
+            }
+            Sm.create(p.message)
+              .then(responseWithResult(res, 201))
+              .catch(handleError(res));
+          })
+          .catch(err=>{
+            console.log(err);
+            Sm.create(p.message)
+              .then(responseWithResult(res, 201))
+              .catch(handleError(res));
+          });
+        },timeout);
+      })
+      .catch(err=>{
+        console.log('Failed to create at Twilio');
+        console.log(client);
+        console.error(err);
+        if (!res.boolean) {
+          res.boolean=true;
+          res.status(err.status).send(err.message);
+        }
+      });
+    },index*2000);
   });
 }
 
 // Creates a new Sm in the DB
 export function incoming(req, res) {
-  var sms = {to:req.body.To,
+  let sms = {to:req.body.To,
             from:req.body.From,
             body:req.body.Body,
             mediaUrl:req.body.MediaUrl0,
@@ -212,7 +340,7 @@ export function incoming(req, res) {
   };
   console.log('incoming sms');
   //console.log(req.body);
-  var resp = '<?xml version="1.0" encoding="UTF-8"?><Response>Response Text.</Response>';
+  let resp = '<?xml version="1.0" encoding="UTF-8"?><Response>Response Text.</Response>';
   res.writeHead(201, {
     'Content-Type':'text/xml'
   });
@@ -227,7 +355,7 @@ export function nexmo(req, res) {
     res.status(200).end();
   }
   else {
-    var sms = {to:'+' + req.query.to,
+    let sms = {to:'+' + req.query.to,
               from:'+' + req.query.msisdn,
               body:req.query.text,
               mediaUrl:req.query.MediaUrl0,

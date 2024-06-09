@@ -3,7 +3,10 @@
   <div style="height:80px;" id="tdcontent">
     </br>
     <label class="control-label" for="phone">Phone Number</label>
-    <input class="space" type=text placeholder="+1xxxxxxxxxx" tooltip-placement="bottom" uib-tooltip="Include '+1' before ten digit number" id="phone" ng-model="$ctrl.sms.to">
+    <input type="checkbox" tooltip-placement="bottom" uib-tooltip="Check if you want to put this recipient on blast" id="blast" ng-model="$ctrl.sms.blast"
+        ng-click="$ctrl.clickBlast()">
+    <input class="space" type=text placeholder="+1xxxxxxxxxx" tooltip-placement="bottom" uib-tooltip="Include '+1' before ten digit number" 
+        id="phone" ng-model="$ctrl.sms.to" ng-change="$ctrl.phoneEntered()">
     <input type="checkbox" tooltip-placement="bottom" uib-tooltip="Check if you want to send this message to multiple recipients" id="multiple" ng-model="$ctrl.sms.autoSMS"
         ng-click="$ctrl.clickMultiple()">
     <label class="control-label" for="body">Message</label>

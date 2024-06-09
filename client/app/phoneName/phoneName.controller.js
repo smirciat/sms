@@ -20,6 +20,21 @@ class PhoneNameComponent {
     this.getNames();
   }
   
+  removeDuplicates(){
+      var soFar=[];
+      var index;
+      this.names.forEach(name=>{
+        index=soFar.map(e => e.phone).indexOf(name.phone);
+        if (index&&index>=0) {
+          console.log('duplicate');
+        }
+        else {
+          soFar.push(name);
+        }
+      });
+      this.names=soFar;
+    }
+  
   getNames(){
     this.Auth.getCurrentUser((res)=>{
       this.id=res._id;
@@ -27,6 +42,7 @@ class PhoneNameComponent {
         this.names=response.data.sort(function(a,b){
           return a.name.localeCompare(b.name);
         });
+        this.removeDuplicates();
         this.includedNamesArr = angular.fromJson(this.$window.localStorage.getItem("includedNames"));
         this.names.forEach((name)=>{
           this.includedNamesArr.forEach((includedName)=>{

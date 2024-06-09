@@ -19,6 +19,9 @@ import passport from 'passport';
 import session from 'express-session';
 import sqldb from '../sqldb';
 import expressSequelizeSession from 'express-sequelize-session';
+const options = {
+  type: 'application/octet-stream',
+};
 var Store = expressSequelizeSession(session.Store);
 
 export default function(app) {
@@ -44,6 +47,7 @@ export default function(app) {
   //app.use(bodyParser.json());
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+  //app.use(bodyParser.raw(options));
 
   app.use(methodOverride());
   app.use(cookieParser());
