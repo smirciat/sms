@@ -41,7 +41,7 @@ module.exports = function(grunt) {
       dev: {
         options: {
           script: '<%= yeoman.server %>',
-          debug: true
+          debug: false
         }
       },
       prod: {
@@ -208,7 +208,7 @@ module.exports = function(grunt) {
             // opens browser on initial server start
             nodemon.on('config:update', function() {
               setTimeout(function() {
-                require('open')('http://localhost:9000/debug?port=5858');
+                require('open')('http://localhost:9000/debug?port=5868');
               }, 500);
             });
           }
